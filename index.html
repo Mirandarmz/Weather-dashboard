@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="Description" content="Enter your description here" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./assets/style.css">
+  <title>Weather Dashboard</title>
+</head>
+
+<body>
+
+  <header class="container-fluid text-light mb-5 p-3">
+    <div class="d-flex align-items-center">
+      <h1>Weather dashboard</h1>
+    </div>
+  </header>
+
+  <!-- Two column layout -->
+  <section class="container my-5">
+    <div class="row">
+      <div class="col-4">
+          <form>
+              <div class="form-group">
+                  <h2>Search for a city:</h2>
+                  <input type="text" class="form-control" id="inputSearch" placeholder="Enter a city">
+            </div>
+            <button type="button" class="btn btn-primary">Search!</button>
+          </form>
+          <div id="historyContainer">
+
+          </div>
+      </div>
+
+      <div class="col-8 ">
+          <div class="row forecasts">
+              <div class="col-12">
+                  Today's weather
+              </div>
+          </div>
+          <div class="row forecasts">
+            <div class="col-12">
+                5-day forecast
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script src="./assets/script.js"></script>
+
+</body>
+
+
+</html>

@@ -207,6 +207,7 @@ function fetchForecast(city) {
   });
 }
 
+
 function initStorage(){
   searched=JSON.parse(localStorage.getItem("searched")) || [];
   console.log(searched);

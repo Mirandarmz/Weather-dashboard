@@ -1,3 +1,4 @@
+/*Style for both forecast container (today and 5-day forecast)*/
 .forecasts{
     height: 400px;
     width: 800px;
@@ -5,17 +6,22 @@
     background-color: white;
 }
 
+/*Special height for 5-day container*/
 #forecastDisplay{
-    height: 800px;
+    height: 900px;
 }
+
+/*Background color for header*/
 header{
     background-color: cadetblue;
 }
 
+/*Special margin for every h1*/
 h1{
     margin: auto;
 }
 
+/*Characteristics for container of past searchs*/
 #historyContainer{
     height: 100%;
     margin-top: 50px;

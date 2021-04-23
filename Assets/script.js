@@ -1,86 +1,107 @@
+//Generated 2 global variables -> my personal api key to access open weather api, array for local storage functionality and an index that will be used later
 var apiKey = "baf0a769a729fefff82e16fcf9033cc5";
-var searched=[];
+var searched = [];
+var i = 0;
 
+//Functionality for the search button on click after entering a city
 $("#searchButton").click(function () {
-
-  $("#todayTitle").empty();
-  $("#todaySection").empty();
-
+  //First make the containers appear and retrieve the value of the input
   var city = $("#cityInput").val();
   $(".forecasts").css("background-color", "#D9E8E8");
   $("#historyContainer").css("background-color", "#2E4C4D");
 
+  //Check if something was entered in the input, if not send an alert
   if (city === "" || city == NaN) {
     alert("Please enter a city");
   }
 
+  //Make the info search with the input value
   fetchToday(city);
-  initStorage();
 });
 
-function fetchToday(city){
+//Function to fetch today's forecast using the city entered in the input
+function fetchToday(city) {
+  //In case the user clicks again, make sure all past elements created and appended are deleted
+  $("#todayTitle").empty();
+  $("#todaySection").empty();
+
+  //fetch using the city and appy key
   fetch(
     "https://api.openweathermap.org/data/2.5/weather?q=" +
-      city +
-      "&units=imperial&appid=" +
-      apiKey,
+    city +
+    "&units=imperial&appid=" +
+    apiKey,
     {
       method: "GET", //GET is the default.
       credentials: "same-origin", // include, *same-origin, omit
       redirect: "follow", // manual, *follow, error
     }
   )
+    //First then, returns a promise
     .then(function (response) {
       return response.json();
     })
+    //Second then, executes function with the array
     .then(function (data) {
-        console.log(data);
-        //CITY AND DATE
-      //$("#todaySection").empty();
+      //Creates elements, adds text and appends the elements 
+      //For city and date
       var title = document.createElement("h3");
-      title.textContent = city + " (" + moment(data.dt.value).format("MMM D, YYYY") + ") ";;
+      title.textContent =
+        city + " (" + moment(data.dt.value).format("MMM D, YYYY") + ") ";
       $("#todayTitle").append(title);
 
-      //ICON
-      var icon = document.createElement("img")
-      icon.setAttribute("src", "https://openweathermap.org/img/wn/"+data.weather[0].icon+"@2x.png");
-      icon.setAttribute("width","70px");
-      icon.setAttribute("height","70px");
+      //For icon
+      var icon = document.createElement("img");
+      icon.setAttribute(
+        "src",
+        "https://openweathermap.org/img/wn/" + data.weather[0].icon + "@2x.png"
+      );
+      icon.setAttribute("width", "70px");
+      icon.setAttribute("height", "70px");
       title.append(icon);
 
-      //TEMP
+      //For temperature
       var temp = document.createElement("p");
-      temp.textContent = "Temperature: " + data.main.temp +" ºF";
-      temp.style.marginLeft="20px";
+      temp.textContent = "Temperature: " + data.main.temp + " ºF";
+      temp.style.marginLeft = "20px";
       $("#todaySection").append(temp);
 
-
-      //HUMIDITY
+      //For humidity
       var hum = document.createElement("p");
       hum.textContent = "Humidity: " + data.main.humidity + " %";
-      hum.style.marginLeft="20px";
+      hum.style.marginLeft = "20px";
       $("#todaySection").append(hum);
 
-      //WIND
+      //For wind
       var wind = document.createElement("p");
       wind.textContent = "Wind: " + data.wind.speed + " MPH";
-      wind.style.marginLeft="20px";
+      wind.style.marginLeft = "20px";
       $("#todaySection").append(hum);
 
-      //UV INDEX NEEDS A NEW FETCH AND A DISPLAY IN ITS THENN
-      var lat= data.coord.lat;
+      //UV Index needs a new fetch and its own display
+      var lat = data.coord.lat;
       var long = data.coord.lon;
-      fetchUV(lat,long)
+      fetchUV(lat, long);
 
-      //DISPLAY 5 DAY FORECAST
+      //Call function to display the 5 day forecast 
       fetchForecast(city);
 
+      //Initialize storage functionality
+      searched.push(city);
+      storeSearch();
+      renderSearch();
     });
 }
 
-function fetchUV(lat,long){
+//Function to fetch the uv index, receives the latitud and longitud from the first fetch 
+function fetchUV(lat, long) {
   fetch(
-    "https://api.openweathermap.org/data/2.5/uvi?appid="+apiKey+"&lat="+lat+"&lon="+long,
+    "https://api.openweathermap.org/data/2.5/uvi?appid=" +
+    apiKey +
+    "&lat=" +
+    lat +
+    "&lon=" +
+    long,
     {
       method: "GET", //GET is the default.
       credentials: "same-origin", // include, *same-origin, omit
@@ -91,129 +112,118 @@ function fetchUV(lat,long){
       return response.json();
     })
     .then(function (data) {
-      console.log(data);//
-      var index=data.value;
+      //Retrieves the index, generates p element and sets text
+      var index = data.value;
       var uv = document.createElement("p");
       uv.textContent = "UV Index: " + index;
-      uv.style.marginLeft="20px";
-      if(index<=2){
-        uv.style.backgroundColor="rgb(0, 128, 0,.60)";
-      }else{
-        if(index<=5){
-          uv.style.backgroundColor="rgb(255, 255, 0,.60)";
-        }else{
-          if(index<=7){
-            uv.style.backgroundColor="rgb(255, 87, 51,.80)";
-          }else{
-            if(index<=10){
-              uv.style.backgroundColor="rgb(255, 0, 0,.80)";
-            }
-            else{
-              uv.style.backgroundColor="rgb(128, 0, 128,.60)";
+      uv.style.marginLeft = "20px";
+
+      //Depending on the index, sets the color 
+      //Green for low, yellow for moderate, orange for high, red for very high, purple for extreme 
+      if (index <= 2) {
+        uv.style.backgroundColor = "rgb(0, 128, 0,.60)";
+      } else {
+        if (index <= 5) {
+          uv.style.backgroundColor = "rgb(255, 255, 0,.60)";
+        } else {
+          if (index <= 7) {
+            uv.style.backgroundColor = "rgb(255, 87, 51,.80)";
+          } else {
+            if (index <= 10) {
+              uv.style.backgroundColor = "rgb(255, 0, 0,.80)";
+            } else {
+              uv.style.backgroundColor = "rgb(128, 0, 128,.60)";
             }
           }
         }
       }
+      //Appends the newly created uv index element 
       $("#todaySection").append(uv);
-
     });
 }
 
-function fetchForecast(city){
-    var apiURL = "https://api.openweathermap.org/data/2.5/forecast?q="+city+"&units=imperial&appid="+ apiKey;
-    $("#forecastTitle").empty();
-    $("#forecastSection").empty();
+//Fetch the 5 day forecast 
+function fetchForecast(city) {
+  var apiURL =
+    "https://api.openweathermap.org/data/2.5/forecast?q=" +
+    city +
+    "&units=imperial&appid=" +
+    apiKey;
 
-    fetch(apiURL)
-    .then(function(response){
-        response.json().then(function(data){
-           $("#forecastTitle").text("5 Day Forecast");
-           $("#forecastTitle").css("margin-left","20px");
-           $("#forecastSection").css("heigth","800px");
+  //First delete every element we could already have in the container 
+  $("#forecastTitle").empty();
+  $("#forecastSection").empty();
 
-        for(var i=5; i < data.list.length; i=i+8){
-       var forecast = data.list[i];
-        
-       
-       var forecastCard=document.createElement("div");
-       forecastCard.classList = "card bg-info text-light m-4 col-2";
+  fetch(apiURL).then(function (response) {
+    response.json().then(function (data) {
+      //Set title of container and style 
+      $("#forecastTitle").text("5 Day Forecast");
+      $("#forecastTitle").css("margin-left", "20px");
 
-       //console.log(dailyForecast)
+      //Loop 5 times through the for, creating elements, their content and appending them to create the forecast card 
+      for (var i = 5; i < data.list.length; i = i + 8) {
+        var forecast = data.list[i];
 
-       //create date element
-       var date = document.createElement("h5")
-       date.textContent= moment.unix(forecast.dt).format("MMM D, YYYY");
-       date.classList = "card-header text-center"
-       forecastCard.appendChild(date);
- 
-       
-       //create an image element
-       var icon = document.createElement("img")
-       icon.classList = "card-body text-center";
-       icon.setAttribute("src", "https://openweathermap.org/img/wn/"+forecast.weather[0].icon+"@2x.png");  
-       forecastCard.appendChild(icon);
-       
-       //create temperature span
-       var temp=document.createElement("span");
-       temp.classList = "card-body text-center";
-       temp.textContent = forecast.main.temp + " °F";
-       forecastCard.appendChild(temp);
+        //We create a card using bootstrap cards 
+        var forecastCard = document.createElement("div");
+        forecastCard.classList = "card bg-info text-light m-4 col-2";
 
-       var hum=document.createElement("span");
-       hum.classList = "card-body text-center";
-       hum.textContent = forecast.main.humidity + "  %";
-       forecastCard.appendChild(hum);
+        //Generate date element and append to the card 
+        var date = document.createElement("h5");
+        date.textContent = moment.unix(forecast.dt).format("MMM D, YYYY");
+        date.classList = "card-header text-center";
+        forecastCard.appendChild(date);
 
-        // console.log(forecastEl);
-       //append to five day container
-       $("#forecastSection").append(forecastCard);
-    }
+        //Generate image element and append to the card, we do so by changing the source of the img to the link provided by the data 
+        var icon = document.createElement("img");
+        icon.classList = "card-body text-center";
+        icon.setAttribute(
+          "src",
+          "https://openweathermap.org/img/wn/" +
+          forecast.weather[0].icon +
+          "@2x.png"
+        );
+        forecastCard.appendChild(icon);
 
-        });
+        //Generate temperature elemetn and append to the card 
+        var temp = document.createElement("span");
+        temp.classList = "card-body text-center";
+        temp.textContent = forecast.main.temp + " °F";
+        forecastCard.appendChild(temp);
+
+        //Generate humidity element and append to the card 
+        var hum = document.createElement("span");
+        hum.classList = "card-body text-center";
+        hum.textContent = forecast.main.humidity + "  %";
+        forecastCard.appendChild(hum);
+
+        //Append card to forecast container 
+        $("#forecastSection").append(forecastCard);
+      }
     });
+  });
 }
 
 //Rendering of todos written
 function renderSearch() {
-  console.log("Searched"+searched);
-  for (var i = 0; i < searched.length; i++) { //Loop that sets the value of the text areas to the ones saved on the storage 
-    var search = searched[i];
-    var searchBtn=document.createElement("button");
-    searchBtn.textContent = searched[i].city;
-    searchBtn.classList = "d-flex w-100 btn-light border p-2";
-    searchBtn.setAttribute("data-city",search.city)
-    searchBtn.setAttribute("type", "submit");
+  var search = searched[i];
+  var searchBtn = document.createElement("button");
+  searchBtn.textContent = searched[i];
+  searchBtn.classList = "d-flex w-100 btn-light border p-2";
+  searchBtn.setAttribute("data-city", searched);
+  searchBtn.setAttribute("type", "submit");
 
-    $("#historyContainer").append(searchBtn);
- }
+  $("#historyContainer").append(searchBtn);
+  i++;
 }
 
-//Function executed when the page initially loads to pull elements saved in the local storage 
-function initStorage() {
-  var storedSearch = JSON.parse(localStorage.getItem("searched"));
+function storeSearch() {
+  localStorage.setItem("searched", JSON.stringify(searched));
+}
 
-  if (storedSearch !== null) {
-    searched = storedSearch;
-    console.log("Searched"+searched);
-    renderSearch();
+$("#historyContainer").click(function (event) {
+  var city = event.target.getAttribute("data-city");
+  if (city) {
+    fetchToday(city);
   }
-
-}
-
-function saveCity(){
-  var todoText=searched[i].city;
-  localStorage.setItem("searched", JSON.stringify(searched))
-  console.log("Searched"+searched);
-  renderSearch();
-}
-
-initStorage();
-
-
-
-// pastSearch();
-
-//cityFormEl.addEventListener("submit", formSumbitHandler);
-//pastSearchButtonEl.addEventListener("click", pastSearchHandler);
-
-
+});

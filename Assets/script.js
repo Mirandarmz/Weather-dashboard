@@ -11,7 +11,7 @@ $("#searchButton").click(function () {
 
   //Check if something was entered in the input, if not send an alert
   if (city === "" || city == NaN) {
-    alert("Please enter a city");
+    alert("Please enter a valid city");
   }
 
   //Make the info search with the input value
@@ -23,6 +23,8 @@ function fetchToday(city) {
   //In case the user clicks again, make sure all past elements created and appended are deleted
   $("#todayTitle").empty();
   $("#todaySection").empty();
+  $("#forecastSection").empty();
+  $("#forecastTitle").empty();
 
   //fetch using the city and appy key
   fetch(
@@ -38,6 +40,11 @@ function fetchToday(city) {
   )
     //First then, returns a promise
     .then(function (response) {
+      //If the city entered has no results found, send an alert and break the function
+      if(response.status==404){
+        alert("Please enter a valid city");
+        return;
+      }
       return response.json();
     })
     //Second then, executes function with the array
@@ -86,6 +93,7 @@ function fetchToday(city) {
       fetchForecast(city);
 
       //Initialize storage functionality
+      //First we check if the city entered is not already in the array to avoid repeating, if it is not then push the city, else break the function 
       if(searched.indexOf(city)==-1){
         searched.push(city);
       }else{
@@ -154,7 +162,6 @@ function fetchForecast(city) {
     apiKey;
 
   //First delete every element we could already have in the container 
-  $("#forecastTitle").empty();
   $("#forecastSection").empty();
 
   fetch(apiURL).then(function (response) {
@@ -207,37 +214,24 @@ function fetchForecast(city) {
   });
 }
 
-
+//Function to retrieve searched array from local storage, if there is no initialize as an empty array
 function initStorage(){
   searched=JSON.parse(localStorage.getItem("searched")) || [];
-  console.log(searched);
-  for(var j=0;j<searched.length;j++){
-    var searchBtn = document.createElement("button");
-    searchBtn.textContent = searched[j];
-    searchBtn.classList = "d-flex w-100 btn-light border p-2";
-    searchBtn.setAttribute("data-city", searched[j]);
-    $("#historyContainer").append(searchBtn);
-  }
-
+  displayCity();
 }
 
 //Rendering of todos written
 function renderSearch() {
-  var search = searched[i];
-
-  var searchBtn = document.createElement("button");
-  searchBtn.textContent = searched[i];
-  searchBtn.classList = "d-flex w-100 btn-light border p-2";
-  searchBtn.setAttribute("data-city", searched[i]);
-  searchBtn.setAttribute("type", "submit");
-  $("#historyContainer").append(searchBtn);
-  i++;
+  $("#historyContainer").empty();
+  displayCity();
 }
 
+//Stores the new search after being pushed 
 function storeSearch() {
   localStorage.setItem("searched", JSON.stringify(searched));
 }
 
+//On click event to the container, checks if whatever was clicked is a button by getting the attribute data-city (unique to the buttons appended)
 $("#historyContainer").click(function (event) {
   var city = event.target.getAttribute("data-city");
   if (city) {
@@ -246,4 +240,16 @@ $("#historyContainer").click(function (event) {
   }
 });
 
+//Function to loop through the array and siplay as buttons each element in it
+function displayCity(){
+  for(var j=0;j<searched.length;j++){
+    var searchBtn = document.createElement("button");
+    searchBtn.textContent = searched[j];
+    searchBtn.classList = "d-flex w-100 btn-light border p-2";
+    searchBtn.setAttribute("data-city", searched[j]);
+    $("#historyContainer").append(searchBtn);
+  } 
+}
+
+//Function to run when the page loads, retrieves array from local storage 
 initStorage();

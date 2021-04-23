@@ -8,7 +8,6 @@ $("#searchButton").click(function () {
   //First make the containers appear and retrieve the value of the input
   var city = $("#cityInput").val();
   $(".forecasts").css("background-color", "#D9E8E8");
-  $("#historyContainer").css("background-color", "#2E4C4D");
 
   //Check if something was entered in the input, if not send an alert
   if (city === "" || city == NaN) {
@@ -87,7 +86,11 @@ function fetchToday(city) {
       fetchForecast(city);
 
       //Initialize storage functionality
-      searched.push(city);
+      if(searched.indexOf(city)==-1){
+        searched.push(city);
+      }else{
+        return;
+      }
       storeSearch();
       renderSearch();
     });
@@ -204,15 +207,28 @@ function fetchForecast(city) {
   });
 }
 
+function initStorage(){
+  searched=JSON.parse(localStorage.getItem("searched")) || [];
+  console.log(searched);
+  for(var j=0;j<searched.length;j++){
+    var searchBtn = document.createElement("button");
+    searchBtn.textContent = searched[j];
+    searchBtn.classList = "d-flex w-100 btn-light border p-2";
+    searchBtn.setAttribute("data-city", searched[j]);
+    $("#historyContainer").append(searchBtn);
+  }
+
+}
+
 //Rendering of todos written
 function renderSearch() {
   var search = searched[i];
+
   var searchBtn = document.createElement("button");
   searchBtn.textContent = searched[i];
   searchBtn.classList = "d-flex w-100 btn-light border p-2";
-  searchBtn.setAttribute("data-city", searched);
+  searchBtn.setAttribute("data-city", searched[i]);
   searchBtn.setAttribute("type", "submit");
-
   $("#historyContainer").append(searchBtn);
   i++;
 }
@@ -224,6 +240,9 @@ function storeSearch() {
 $("#historyContainer").click(function (event) {
   var city = event.target.getAttribute("data-city");
   if (city) {
+    $(".forecasts").css("background-color", "#D9E8E8");
     fetchToday(city);
   }
 });
+
+initStorage();

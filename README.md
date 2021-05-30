@@ -17,7 +17,7 @@ The next libraries were used to create the project:
 ## Deployed application
 
 Image of the deployed application:
-![Screenshot of the deployed aplication](./assets/images/deployed.png)
+![Screenshot of the deployed aplication](./Assets/images/Deployed.png)
 
 Link to the deployed application: 
 [Public github page](https://mirandarmz.github.io/Weather-dashboard/) 
